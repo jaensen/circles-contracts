@@ -4,6 +4,16 @@ A group currency would define a number of individual Circles tokens directly or 
 
 See https://aboutcircles.com/t/suggestion-for-group-currencies/410 for further details.
 
+## Call Flows for mint and mintDelegate
+
+### mint
+
+![flow](https://drive.google.com/uc?export=view&id=1QIYX3UM2HqW8UJGaUIH13SnADnZadb73)
+
+### mintDelegate
+
+![flow](https://drive.google.com/uc?export=view&id=1t2mFhNWxrtlSSyn5TbGAh6-Nz4ds1AkA)
+
 ## Tech Walk-Through
 
 The initial drafts uses manual steps to setup, deploy and test the `GroupCurrencyToken` smart contract.
