@@ -13,7 +13,7 @@ contract GroupCurrencyToken is ERC20 {
 
     address public immutable owner; // the safe/EOA/contract that deployed this token
     address public hub; // the address of the hub this token is associated with
-    
+
     mapping (address => bool) public directMembers;
     mapping (address => address) public delegatedTrustees;
     
