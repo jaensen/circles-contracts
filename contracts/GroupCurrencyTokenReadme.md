@@ -1,0 +1,24 @@
+# Group Currency Token Smart Contract
+
+A group currency would define a number of individual Circles tokens directly or transitively (all accounts trusted by account X) as members. All of those members Circles could be used to mint the group currency.
+
+See https://aboutcircles.com/t/suggestion-for-group-currencies/410 for further details.
+
+## Tech Walk-Through
+
+The initial drafts uses manual steps to setup, deploy and test the `GroupCurrencyToken` smart contract.
+
+* Clone circles-contract-group-currency fork: `git clone git@github.com:ice09/circles-contracts.git`
+* Open Remix-IDE: https://remix.ethereum.org/ 
+* Switch to *JavaScript VM (Berlin)* Environment (until London has a working debug mode in Remix-IDE)
+* Deploy `Hub.sol` with params `"1","1","CRC","Circles","50000000000000000000","1","1"`
+* Call `signup` on Hub contract
+	* This will deploy an individual Circles-Token from the Hub contract
+* From Event-Logs in Remix, copy "Token" address from "Signup" event 
+* Load `Token.sol` at the copied address
+	* This is the Circles-Token which will be used as Collateral Token
+* Deploy `GroupCurrencyToken.sol` with Hub smart contract address
+* `approve` GroupCurrencyToken address at Collateral token (eg. amount 10000000000000000000)
+* `addMember` for Collateral Token address
+* `mint` 10000000000000000000 for Collateral token
+
