@@ -17,8 +17,17 @@ The initial drafts uses manual steps to setup, deploy and test the `GroupCurrenc
 * From Event-Logs in Remix, copy "Token" address from "Signup" event 
 * Load `Token.sol` at the copied address
 	* This is the Circles-Token which will be used as Collateral Token
-* Deploy `GroupCurrencyToken.sol` with Hub smart contract address
-* `approve` GroupCurrencyToken address at Collateral token (eg. amount 10000000000000000000)
-* `addMember` for Collateral Token address
-* `mint` 10000000000000000000 for Collateral token
+* Deploy `GroupCurrencyToken.sol` with Hub smart contract address and some name and symbol
+* [CollateralToken] `approve` GroupCurrencyToken address (eg. amount 10000000000000000000)
 
+### mint
+
+* [GroupCurrencyToken] `addMember` for Collateral Token address
+* [GroupCurrencyToken] `mint` 10000000000000000000 for Collateral token
+
+### mintDelegate 
+
+* [Hub] `signup` with second account
+* [Hub] `trust` with second account: firstAccountAddress, 100
+* [GroupCurrencyToken] `addDelegateTrustee` with first account: secondAccountAddress
+* [GroupCurrencyToken] `mintDelegate` with first account: secondAccountAddress, CollateralToken, 10000

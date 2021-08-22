@@ -10,12 +10,15 @@ contract GroupCurrencyToken is ERC20 {
 
     uint8 public immutable override decimals = 18;
     uint8 public immutable mintFeePerThousand = 1;
+    
+    string public name;
+    string public override symbol;
 
     address public immutable owner; // the safe/EOA/contract that deployed this token
     address public hub; // the address of the hub this token is associated with
 
     mapping (address => bool) public directMembers;
-    mapping (address => address) public delegatedTrustees;
+    mapping (address => bool) public delegatedTrustees;
     
     event Minted(address indexed receiver, uint256 amount, uint256 mintAmount, uint256 mintFee);
 
@@ -32,7 +35,9 @@ contract GroupCurrencyToken is ERC20 {
     }
 
     // TODO: How is the owner set, who is deploying the contract? Should it be msg.sender or a parameter?
-    constructor(address _hub) {
+    constructor(address _hub, string memory _name, string memory _symbol) {
+        symbol = _symbol;
+        name = _name;
         owner = msg.sender;
         hub = _hub;
     }
@@ -45,6 +50,14 @@ contract GroupCurrencyToken is ERC20 {
         directMembers[_member] = false;
     }
     
+    function addDelegatedTrustee(address _account) public onlyOwner {
+        delegatedTrustees[_account] = true;
+    }
+
+    function removeDelegatedTrustee(address _account) public onlyOwner {
+        delegatedTrustees[_account] = false;
+    }
+    
     // Group currently is created from collateral tokens. Collateral is directly part of the directMembers dictionary.
     function mint(address _collateral, uint256 _amount) public {
         require(directMembers[_collateral], "Collateral address is not marked as direct member.");
@@ -54,11 +67,11 @@ contract GroupCurrencyToken is ERC20 {
     // Group currently is created from collateral tokens. Collateral is trusted by someone in the delegatedTrustees dictionary.
     function mintDelegate(address _trustedBy, address _collateral, uint256 _amount) public {
         require(_trustedBy != address(0), "trustedBy must be valid address.");
-        address collateralOwner = HubI(hub).tokenToUser(_collateral);
         // require(trusted_by in delegated_trustees)
-        require(delegatedTrustees[_trustedBy] != address(0));
+        require(delegatedTrustees[_trustedBy]);
+        address collateralOwner = HubI(hub).tokenToUser(_collateral);
         // require(trusted_by.trust(collateral)
-        require(HubI(hub).limits(collateralOwner, delegatedTrustees[_trustedBy]) > 0);
+        require(HubI(hub).limits(_trustedBy, collateralOwner) > 0);
         transferCollateralAndMint(_collateral, _amount);
     }
     
@@ -69,20 +82,6 @@ contract GroupCurrencyToken is ERC20 {
         // mint amount-fee to msg.sender
         _mint(msg.sender, mintAmount);
         emit Minted(msg.sender, _amount, mintAmount, mintFee);    
-    }
-    
-    /// @notice helper function for the token symbol
-    /// @dev all circles tokens should have the same symbol
-    /// @return the token symbol
-    function symbol() public view override returns (string memory) {
-        return HubI(hub).symbol();
-    }
-
-    /// @notice helper function for the token name
-    /// @dev all circles tokens should have the same name
-    /// @return the token name
-    function name() public view returns (string memory) {
-        return HubI(hub).name();
     }
 
     function transfer(address dst, uint256 wad) public override returns (bool) {
