@@ -9,24 +9,18 @@ contract GroupCurrencyToken is ERC20 {
     using SafeMath for uint256;
 
     uint8 public immutable override decimals = 18;
-    uint8 public immutable mintFeePerThousand = 1;
+    uint8 public mintFeePerThousand;
     
     string public name;
     string public override symbol;
 
-    address public immutable owner; // the safe/EOA/contract that deployed this token
+    address public owner; // the safe/EOA/contract that deployed this token, can be changed by owner
     address public hub; // the address of the hub this token is associated with
 
     mapping (address => bool) public directMembers;
     mapping (address => bool) public delegatedTrustees;
     
     event Minted(address indexed receiver, uint256 amount, uint256 mintAmount, uint256 mintFee);
-
-    /// @dev modifier allowing function to be only called through the hub
-    modifier onlyHub() {
-        require(msg.sender == hub);
-        _;
-    }
 
     /// @dev modifier allowing function to be only called by the token owner
     modifier onlyOwner() {
@@ -35,11 +29,16 @@ contract GroupCurrencyToken is ERC20 {
     }
 
     // TODO: How is the owner set, who is deploying the contract? Should it be msg.sender or a parameter?
-    constructor(address _hub, string memory _name, string memory _symbol) {
+    constructor(address _hub, uint8 _mintFeePerThousand, string memory _name, string memory _symbol) {
         symbol = _symbol;
         name = _name;
         owner = msg.sender;
         hub = _hub;
+        mintFeePerThousand = _mintFeePerThousand;
+    }
+    
+    function changeOwner(address _owner) public onlyOwner {
+        owner = _owner;
     }
     
     function addMemberToken(address _member) public onlyOwner {
