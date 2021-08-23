@@ -29,7 +29,6 @@ contract GroupCurrencyToken is ERC20 {
         _;
     }
 
-    // TODO: How is the owner set, who is deploying the contract? Should it be msg.sender or a parameter?
     constructor(address _hub, address _treasury, uint8 _mintFeePerThousand, string memory _name, string memory _symbol) {
         symbol = _symbol;
         name = _name;
@@ -78,6 +77,7 @@ contract GroupCurrencyToken is ERC20 {
     
     function transferCollateralAndMint(address _collateral, uint256 _amount) internal {
         uint256 mintFee = (_amount.div(1000)).mul(mintFeePerThousand);
+        // send personal CRC to treasury for now
         ERC20(_collateral).transferFrom(msg.sender, treasury, _amount);
         uint256 mintAmount = _amount.sub(mintFee);
         // mint amount-fee to msg.sender
