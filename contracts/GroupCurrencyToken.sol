@@ -42,11 +42,11 @@ contract GroupCurrencyToken is ERC20 {
         hub = _hub;
     }
     
-    function addMember(address _member) public onlyOwner {
+    function addMemberToken(address _member) public onlyOwner {
         directMembers[_member] = true;
     }
 
-    function removeMember(address _member) public onlyOwner {
+    function removeMemberToken(address _member) public onlyOwner {
         directMembers[_member] = false;
     }
     
