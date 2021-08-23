@@ -68,10 +68,10 @@ contract GroupCurrencyToken is ERC20 {
     function mintDelegate(address _trustedBy, address _collateral, uint256 _amount) public {
         require(_trustedBy != address(0), "trustedBy must be valid address.");
         // require(trusted_by in delegated_trustees)
-        require(delegatedTrustees[_trustedBy]);
+        require(delegatedTrustees[_trustedBy], "trustedBy not contained in delegatedTrustees.");
         address collateralOwner = HubI(hub).tokenToUser(_collateral);
         // require(trusted_by.trust(collateral)
-        require(HubI(hub).limits(_trustedBy, collateralOwner) > 0);
+        require(HubI(hub).limits(_trustedBy, collateralOwner) > 0, "trustedBy does not trust collateral owner.");
         transferCollateralAndMint(_collateral, _amount);
     }
     
