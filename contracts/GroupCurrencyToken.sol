@@ -16,6 +16,7 @@ contract GroupCurrencyToken is ERC20 {
 
     address public owner; // the safe/EOA/contract that deployed this token, can be changed by owner
     address public hub; // the address of the hub this token is associated with
+    address public treasury; // account which gets the personal tokens for whatever later usage
 
     mapping (address => bool) public directMembers;
     mapping (address => bool) public delegatedTrustees;
@@ -29,11 +30,12 @@ contract GroupCurrencyToken is ERC20 {
     }
 
     // TODO: How is the owner set, who is deploying the contract? Should it be msg.sender or a parameter?
-    constructor(address _hub, uint8 _mintFeePerThousand, string memory _name, string memory _symbol) {
+    constructor(address _hub, address _treasury, uint8 _mintFeePerThousand, string memory _name, string memory _symbol) {
         symbol = _symbol;
         name = _name;
         owner = msg.sender;
         hub = _hub;
+        treasury = _treasury;
         mintFeePerThousand = _mintFeePerThousand;
     }
     
@@ -75,8 +77,8 @@ contract GroupCurrencyToken is ERC20 {
     }
     
     function transferCollateralAndMint(address _collateral, uint256 _amount) internal {
-        uint256 mintFee = (_amount.div(1000)).mul(mintFeePerThousand); // Set fixed 0.1% fee for now
-        ERC20(_collateral).transferFrom(msg.sender, address(this), _amount);
+        uint256 mintFee = (_amount.div(1000)).mul(mintFeePerThousand);
+        ERC20(_collateral).transferFrom(msg.sender, treasury, _amount);
         uint256 mintAmount = _amount.sub(mintFee);
         // mint amount-fee to msg.sender
         _mint(msg.sender, mintAmount);
