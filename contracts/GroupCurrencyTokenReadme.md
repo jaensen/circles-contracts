@@ -2,6 +2,8 @@
 
 A group currency would define a number of individual Circles tokens directly or transitively (all accounts trusted by account X) as members. All of those members Circles could be used to mint the group currency.
 
+_Note: The GroupCurrencyToken contract is WIP, non-tested, non-audited and not ready for Mainnet/production usage!_
+
 See https://aboutcircles.com/t/suggestion-for-group-currencies/410 for further details.
 
 ## Call Flows for mint and mintDelegate
