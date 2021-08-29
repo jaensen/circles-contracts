@@ -116,3 +116,7 @@ Helper functions defined in [`test/helpers`](test/helpers) provides functionalit
 GNU Affero General Public License v3.0 [`AGPL-3.0`]
 
 [`AGPL-3.0`]: LICENSE
+
+## Testing
+
+Added this here just for testing purposes.
