@@ -11,6 +11,8 @@ contract GroupCurrencyToken is ERC20 {
     uint8 public immutable override decimals = 18;
     uint8 public mintFeePerThousand;
     
+    bool public suspended;
+    
     string public name;
     string public override symbol;
 
@@ -29,13 +31,17 @@ contract GroupCurrencyToken is ERC20 {
         _;
     }
 
-    constructor(address _hub, address _treasury, uint8 _mintFeePerThousand, string memory _name, string memory _symbol) {
+    constructor(address _hub, address _treasury, address _owner, uint8 _mintFeePerThousand, string memory _name, string memory _symbol) {
         symbol = _symbol;
         name = _name;
-        owner = msg.sender;
+        owner = _owner;
         hub = _hub;
         treasury = _treasury;
         mintFeePerThousand = _mintFeePerThousand;
+    }
+    
+    function suspend(bool _suspend) public onlyOwner {
+        suspended = _suspend;
     }
     
     function changeOwner(address _owner) public onlyOwner {
@@ -60,12 +66,14 @@ contract GroupCurrencyToken is ERC20 {
     
     // Group currently is created from collateral tokens. Collateral is directly part of the directMembers dictionary.
     function mint(address _collateral, uint256 _amount) public {
+        require(!suspended, "Minting has been suspended.");
         require(directMembers[_collateral], "Collateral address is not marked as direct member.");
         transferCollateralAndMint(_collateral, _amount);
     }
     
     // Group currently is created from collateral tokens. Collateral is trusted by someone in the delegatedTrustees dictionary.
     function mintDelegate(address _trustedBy, address _collateral, uint256 _amount) public {
+        require(!suspended, "Minting has been suspended.");
         require(_trustedBy != address(0), "trustedBy must be valid address.");
         // require(trusted_by in delegated_trustees)
         require(delegatedTrustees[_trustedBy], "trustedBy not contained in delegatedTrustees.");
