@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: AGPL
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./lib/SafeMath.sol";
 import "./Token.sol";
 
-contract Hub {
+contract OrgaHub {
     using SafeMath for uint256;
 
+    address public admin;
     uint256 public immutable inflation; // the inflation rate expressed as 1 + percentage inflation, aka 7% inflation is 107
     uint256 public immutable divisor; // the largest power of 10 the inflation rate can be divided by
     uint256 public immutable period; // the amount of sections between inflation steps
@@ -37,6 +38,7 @@ contract Hub {
     address[] public seen;
 
     constructor(
+        address _admin,
         uint256 _inflation,
         uint256 _period,
         string memory _symbol,
@@ -45,6 +47,7 @@ contract Hub {
         uint256 _initialIssuance,
         uint256 _timeout
     ) {
+        admin = _admin;
         inflation = _inflation;
         divisor = findDivisor(_inflation);
         period = _period;
@@ -54,6 +57,11 @@ contract Hub {
         initialIssuance = _initialIssuance;
         deployedAt = block.timestamp;
         timeout = _timeout;
+    }
+    
+    function changeAdmin(address _admin) public {
+        require(msg.sender == admin, "Only Admin can change admin.");
+        admin = _admin;
     }
 
     /// @notice calculates the correct divisor for the given inflation rate
@@ -283,7 +291,11 @@ contract Hub {
                 // if we've already found a sender, transaction is invalid
                 require(src == address(0), "Path sends from more than one src");
                 // the real token sender must also be the transaction sender
-                require(seen[i] == msg.sender, "Path doesn't send from transaction sender");
+                if (msg.sender == admin) {
+                    // WARN: we remove this check here to allow for require(seen[i] == msg.sender, "Path doesn't send from transaction sender");
+                } else {
+                    require(seen[i] == msg.sender, "Path doesn't send from transaction sender");
+                }
                 src = seen[i];
             }
             // if the address received more than they sent, they are the recipient

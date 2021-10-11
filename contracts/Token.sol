@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./lib/SafeMath.sol";
 import "./ERC20.sol";
 import "./interfaces/HubI.sol";
 

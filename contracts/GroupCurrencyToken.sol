@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./lib/SafeMath.sol";
 import "./ERC20.sol";
 import "./interfaces/HubI.sol";
 
@@ -65,14 +65,14 @@ contract GroupCurrencyToken is ERC20 {
     }
     
     // Group currently is created from collateral tokens. Collateral is directly part of the directMembers dictionary.
-    function mint(address _collateral, uint256 _amount) public {
+    function mint(address _collateral, uint256 _amount) public returns (uint256) {
         require(!suspended, "Minting has been suspended.");
         require(directMembers[_collateral], "Collateral address is not marked as direct member.");
-        transferCollateralAndMint(_collateral, _amount);
+        return transferCollateralAndMint(_collateral, _amount);
     }
     
     // Group currently is created from collateral tokens. Collateral is trusted by someone in the delegatedTrustees dictionary.
-    function mintDelegate(address _trustedBy, address _collateral, uint256 _amount) public {
+    function mintDelegate(address _trustedBy, address _collateral, uint256 _amount) public returns (uint256) {
         require(!suspended, "Minting has been suspended.");
         require(_trustedBy != address(0), "trustedBy must be valid address.");
         // require(trusted_by in delegated_trustees)
@@ -80,17 +80,18 @@ contract GroupCurrencyToken is ERC20 {
         address collateralOwner = HubI(hub).tokenToUser(_collateral);
         // require(trusted_by.trust(collateral)
         require(HubI(hub).limits(_trustedBy, collateralOwner) > 0, "trustedBy does not trust collateral owner.");
-        transferCollateralAndMint(_collateral, _amount);
+        return transferCollateralAndMint(_collateral, _amount);
     }
     
-    function transferCollateralAndMint(address _collateral, uint256 _amount) internal {
+    function transferCollateralAndMint(address _collateral, uint256 _amount) internal returns (uint256) {
         uint256 mintFee = (_amount.div(1000)).mul(mintFeePerThousand);
-        // send personal CRC to treasury for now
-        ERC20(_collateral).transferFrom(msg.sender, treasury, _amount);
         uint256 mintAmount = _amount.sub(mintFee);
         // mint amount-fee to msg.sender
         _mint(msg.sender, mintAmount);
-        emit Minted(msg.sender, _amount, mintAmount, mintFee);    
+        // Token Swap
+        ERC20(_collateral).transferFrom(msg.sender, treasury, _amount);
+        emit Minted(msg.sender, _amount, mintAmount, mintFee);
+        return mintAmount;
     }
 
     function transfer(address dst, uint256 wad) public override returns (bool) {

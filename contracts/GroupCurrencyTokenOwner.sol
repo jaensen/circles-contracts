@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./lib/SafeMath.sol";
 import "./GroupCurrencyToken.sol";
-import "./Hub.sol";
+import "./OrgaHub.sol";
 
 contract GroupCurrencyTokenOwner {
     using SafeMath for uint256;
@@ -27,7 +27,7 @@ contract GroupCurrencyTokenOwner {
     }
     
     function setup() public onlyOwner {
-       Hub(hub).organizationSignup();
+       OrgaHub(hub).organizationSignup();
        GroupCurrencyToken(token).addDelegatedTrustee(address(this));
     }
     
@@ -37,14 +37,18 @@ contract GroupCurrencyTokenOwner {
     
     // Group currently is created from collateral tokens. Collateral is directly part of the directMembers dictionary.
     function mintTransitive(address[] memory tokenOwners, address[] memory srcs, address[] memory dests, uint[] memory wads) public {
-        Hub(hub).transferThrough(tokenOwners, srcs, dests, wads);
+        require(tokenOwners[0] == msg.sender, "First token owner must be message sender.");
         uint lastElementIndex = tokenOwners.length-1;
-        GroupCurrencyToken(token).mintDelegate(address(this), HubI(hub).userToToken(tokenOwners[lastElementIndex]), wads[lastElementIndex]);
+        require(dests[lastElementIndex] == address(this), "GroupCurrencyTokenOwner must be final receiver in the path.");
+        OrgaHub(hub).transferThrough(tokenOwners, srcs, dests, wads);
+        ERC20(HubI(hub).userToToken(tokenOwners[lastElementIndex])).approve(token, wads[lastElementIndex]);
+        uint mintedAmount = GroupCurrencyToken(token).mintDelegate(address(this), HubI(hub).userToToken(tokenOwners[lastElementIndex]), wads[lastElementIndex]);
+        GroupCurrencyToken(token).transfer(srcs[0], mintedAmount);
     }
         
     // Trust must be called by this contract (as a delegate) on Hub
     function trust(address _trustee) public onlyOwner {
-        Hub(hub).trust(_trustee, 100);
+        OrgaHub(hub).trust(_trustee, 100);
     }
     
 }
