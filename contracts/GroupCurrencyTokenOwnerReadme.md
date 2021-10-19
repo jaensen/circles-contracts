@@ -24,6 +24,6 @@ _Note: As there are too many steps necessary for setup & config, `mintTransitive
 ### Integration Test Execution
 
 * Clone circles-contract-group-currency fork: `git clone git@github.com:ice09/token-paid-services.git`
-* Start Hardhat with default mnemonic `junk junk ...`
+* Start Hardhat with default mnemonic `test test ... junk`
 * Start Spring Boot Integration Test `TokenPaidServicesApplicationTests` with `mvn package` or in an IDE with Spring Boot support
 
