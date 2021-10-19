@@ -12,7 +12,7 @@ _Note: As there are too many steps necessary for setup & config, `mintTransitive
 
 ### mintTransitive
 
-![flow](https://drive.google.com/uc?export=view&id=1VFJNXdUbPE8EXSLfoWxopvK27jfX8rUp)
+![flow](https://drive.google.com/uc?export=view&id=15Mas10wGK6JsEMpPxWS0RxOPZypWvqPO)
 
 ## Tech Walk-Through
 
