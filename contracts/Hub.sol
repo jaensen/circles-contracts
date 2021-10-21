@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL
 pragma solidity ^0.7.0;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./lib/SafeMath.sol";
 import "./Token.sol";
 
 contract Hub {
@@ -94,7 +94,7 @@ contract Hub {
     /// @param _periods the step to calculate the issuance rate as of
     /// @return initial issuance rate as if interest (inflation) has been compounded period times
     function inflate(uint256 _initial, uint256 _periods) public view returns (uint256) {
-        // this returns P * (1 + r) ** t - which is a the formula for compound interest if 
+        // this returns P * (1 + r) ** t - which is a the formula for compound interest if
         // interest is compounded only once per period
         // in our case, currentIssuanceRate = initialIssuance * (inflation) ** periods
         uint256 q = pow(inflation, _periods);
@@ -209,7 +209,7 @@ contract Hub {
 
         //if the token doesn't exist, it can't be sent/accepted
         if (address(userToToken[tokenOwner]) == address(0)) {
-             return 0;
+            return 0;
         }
 
         uint256 srcBalance = userToToken[tokenOwner].balanceOf(src);
@@ -224,15 +224,15 @@ contract Hub {
         uint256 destBalance = userToToken[tokenOwner].balanceOf(dest);
 
         uint256 oneHundred = 100;
-        
+
         // find the maximum possible amount based on dest's trust limit for this token
         uint256 max = (userToToken[dest].balanceOf(dest).mul(limits[dest][tokenOwner])).div(oneHundred);
-        
+
         // if trustLimit has already been overriden by a direct transfer, nothing more can be sent
         if (max < destBalance) return 0;
 
         uint256 destBalanceScaled = destBalance.mul(oneHundred.sub(limits[dest][tokenOwner])).div(oneHundred);
-        
+
         // return the max amount dest is willing to hold minus the amount they already have
         return max.sub(destBalanceScaled);
     }
@@ -264,8 +264,8 @@ contract Hub {
         } else {
             // if we haven't, add them to the validation mapping
             validation[dest].seen = true;
-            validation[dest].received = wad; 
-            seen.push(dest);   
+            validation[dest].received = wad;
+            seen.push(dest);
         }
     }
 
@@ -335,13 +335,13 @@ contract Hub {
             address dest = dests[i];
             address token = tokenOwners[i];
             uint256 wad = wads[i];
-            
+
             // check that no trust limits are violated
             uint256 max = checkSendLimit(token, src, dest);
             require(wad <= max, "Trust limit exceeded");
 
             buildValidationData(src, dest, wad);
-            
+
             // go ahead and do the transfers now so that we don't have to walk through this array again
             userToToken[token].hubTransfer(src, dest, wad);
         }
