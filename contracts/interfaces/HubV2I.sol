@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL
 pragma solidity ^0.7.0;
 
+import "../Token.sol";
+
 interface HubV2I {
     function issuance() external view returns (uint256);
     function issuanceByStep(uint256) external view returns (uint256);
@@ -16,5 +18,8 @@ interface HubV2I {
     function deployedAt() external view returns (uint256);
     function inflate(uint256, uint256) external view returns (uint256);
     function timeout() external view returns (uint256);
+
     function useVerifier(address verifier) external;
+    function tokenOfUser(address user) external view returns (Token);
+    function userOfToken(address token) external view returns (address);
 }

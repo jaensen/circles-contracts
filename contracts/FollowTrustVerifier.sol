@@ -1,9 +1,11 @@
 import "./interfaces/HubI.sol";
+import "./interfaces/HubV2I.sol";
+import "./Token.sol";
 
 contract FollowTrustVerifier {
-    uint256 public immutable trustHub;
-    uint256 public immutable tokenHub;
-    uint256 public immutable following;
+    address public immutable trustHub;
+    address public immutable tokenHub;
+    address public immutable following;
 
     constructor(
         address _trustHub,
@@ -18,7 +20,8 @@ contract FollowTrustVerifier {
     function checkSendLimit(address tokenOwner, address src, address dest) public view returns (uint256) {
         uint256 trustLimit = HubI(trustHub).limits(following, tokenOwner);
         if (trustLimit > 0) {
-            return HubV2I(tokenHub).userToToken[tokenOwner].balanceOf(src);
+            Token t = HubV2I(tokenHub).tokenOfUser(tokenOwner);
+            return t.balanceOf(src);
         }
         return 0;
     }

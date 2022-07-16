@@ -9,7 +9,7 @@ import "./interfaces/HubI.sol";
 contract HubV2 {
     using SafeMath for uint256;
 
-    uint256 public immutable previousHub;
+    address public immutable previousHub;
     uint256 public immutable inflation; // the inflation rate expressed as 1 + percentage inflation, aka 7% inflation is 107
     uint256 public immutable divisor; // the largest power of 10 the inflation rate can be divided by
     uint256 public immutable period; // the amount of sections between inflation steps
@@ -60,10 +60,17 @@ contract HubV2 {
         timeout = _timeout;
     }
 
-    /// @notice Can be called by
+    /// @notice Can be called by all signed-up users to opt-in for external verifiers
     function useVerifier(address verifier) public {
         require(address(userToToken[msg.sender]) != address(0) || organizations[msg.sender], "msg.sender must be signed up");
         userVerifierMap[msg.sender] = verifier;
+    }
+
+    function tokenOfUser(address user) public view returns (Token) {
+        return userToToken[user];
+    }
+    function userOfToken(address token) public view returns (address) {
+        return tokenToUser[token];
     }
 
     /// @notice calculates the correct divisor for the given inflation rate
@@ -123,9 +130,10 @@ contract HubV2 {
         Token token = new Token(msg.sender);
         userToToken[msg.sender] = token;
         tokenToUser[address(token)] = msg.sender;
+
         // every user must trust themselves with a weight of 100
         // this is so that all users accept their own token at all times
-        _trust(msg.sender, 100);
+        //_trust(msg.sender, 100);
 
         emit Signup(msg.sender, address(token));
     }
