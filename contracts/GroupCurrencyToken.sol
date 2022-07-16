@@ -63,7 +63,11 @@ contract GroupCurrencyToken is ERC20 {
     function removeDelegatedTrustee(address _account) public onlyOwner {
         delegatedTrustees[_account] = false;
     }
-    
+
+    function trustedMint() onlyOwner {
+        return transferCollateralAndMint(_collateral, _amount);
+    }
+
     // Group currently is created from collateral tokens. Collateral is directly part of the directMembers dictionary.
     function mint(address _collateral, uint256 _amount) public returns (uint256) {
         require(!suspended, "Minting has been suspended.");

@@ -163,7 +163,7 @@ contract Token is ERC20 {
     }
 
     /// @notice special method called by the hub to execute a transitive transaction
-    /// @param from the address the tokens are being transfered from
+    /// @param from the address the tokens are being transferred from
     /// @param to the address the tokens are being transferred to
     /// @param amount the amount of tokens to transfer
     function hubTransfer(
