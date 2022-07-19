@@ -3,6 +3,7 @@ pragma solidity ^0.7.0;
 
 import "./lib/SafeMath.sol";
 import "./Token.sol";
+import "./TokenV2.sol";
 import "./interfaces/VerifierI.sol";
 import "./interfaces/HubI.sol";
 
@@ -21,13 +22,15 @@ contract HubV2 {
     uint256 public immutable timeout; // longest a token can go without a ubi payout before it gets deactivated
 
     mapping (address => address) public userVerifierMap; // Each safe can opt-in for a verifier
-    mapping (address => Token) public userToToken;
+    mapping (address => TokenV2) public userToToken;
     mapping (address => address) public tokenToUser;
     mapping (address => bool) public organizations;
 
     event Signup(address indexed user, address token);
     event OrganizationSignup(address indexed organization);
     event HubTransfer(address indexed from, address indexed to, uint256 amount);
+
+    event TokensMigrated(address indexed user, address indexed oldToken, address indexed newToken, uint256 amount);
 
     // some data types used for validating transitive transfers
     struct transferValidator {
@@ -66,7 +69,7 @@ contract HubV2 {
         userVerifierMap[msg.sender] = verifier;
     }
 
-    function tokenOfUser(address user) public view returns (Token) {
+    function tokenOfUser(address user) public view returns (TokenV2) {
         return userToToken[user];
     }
     function userOfToken(address token) public view returns (address) {
@@ -121,19 +124,52 @@ contract HubV2 {
 
     /// @notice signup to this circles hub - create a circles token and join the trust graph
     /// @dev signup is permanent, there's no way to unsignup
+    function migrate() public {
+        // signup can only be called once
+        require(address(userToToken[msg.sender]) == address(0), "You can't sign up twice");
+        // organizations cannot sign up for a token
+        require(organizations[msg.sender] == false, "Organizations cannot signup as normal users");
+
+        address v1Token = HubI(previousHub).userToToken(msg.sender);
+        require(v1Token != address(0), "You need to be signed-up at HubV1 before signing up at HubV2");
+        require(Token(v1Token).stopped(), "You must stop your v1 token before migrating to the v2 hub");
+
+        TokenV2 token = new TokenV2(msg.sender);
+        userToToken[msg.sender] = token;
+        tokenToUser[address(token)] = msg.sender;
+
+        emit Signup(msg.sender, address(token));
+    }
+
+    /// @notice mints the new token
+    function mint(address _token, uint256 _amount) public {
+        // Find the new token to mint
+        address tokenOwner = HubI(previousHub).tokenToUser(_token);
+        TokenV2 newToken = userToToken[tokenOwner];
+        newToken.migrateMint(msg.sender, _amount);
+
+        // _mint(msg.sender, mintAmount);
+        ERC20(_token).transfer(address(0x000000000000000000000000000000000000dEaD), _amount);
+        emit TokensMigrated(msg.sender, _token, address(newToken), _amount);
+    }
+
+    /// @notice signup to this circles hub - create a circles token and join the trust graph
+    /// @dev signup is permanent, there's no way to unsignup
     function signup() public {
         // signup can only be called once
         require(address(userToToken[msg.sender]) == address(0), "You can't sign up twice");
         // organizations cannot sign up for a token
         require(organizations[msg.sender] == false, "Organizations cannot signup as normal users");
 
-        Token token = new Token(msg.sender);
+        TokenV2 token = new TokenV2(msg.sender);
         userToToken[msg.sender] = token;
         tokenToUser[address(token)] = msg.sender;
 
         // every user must trust themselves with a weight of 100
         // this is so that all users accept their own token at all times
         //_trust(msg.sender, 100);
+        // Not reuqired because signup at v1 is always mandatory first
+        //HubI(previousHub).trust(msg.sender, 100);
 
         emit Signup(msg.sender, address(token));
     }
