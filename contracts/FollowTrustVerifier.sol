@@ -2,6 +2,9 @@ import "./interfaces/HubI.sol";
 import "./interfaces/HubV2I.sol";
 import "./Token.sol";
 
+/// @notice Can be used as verifier in the v2 Hub's checkSendLimit function.
+///         If set for a user then the user automatically 'trusts' all tokens
+//          the 'following' user is trusting.
 contract FollowTrustVerifier {
     address public immutable trustHub;
     address public immutable tokenHub;

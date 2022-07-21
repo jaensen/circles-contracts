@@ -19,4 +19,5 @@ interface HubI {
     function userToToken(address) external returns (address);
     function tokenToUser(address) external returns (address);
     function limits(address,address) external view returns (uint256);
+    function trust(address user, uint limit) external;
 }
