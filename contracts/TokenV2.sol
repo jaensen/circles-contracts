@@ -150,7 +150,7 @@ contract TokenV2 is ERC20 {
 
     /// @notice receive a ubi payout
     /// @dev this is the method to actually update storage with new token balance
-    function update() public {
+    function update() public onlyOwner {
         uint256 gift = look();
         // does nothing if there's no ubi to be payed out
         if (gift > 0) {

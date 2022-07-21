@@ -17,6 +17,7 @@ interface HubI {
     function inflate(uint256, uint256) external view returns (uint256);
     function timeout() external view returns (uint256);
     function userToToken(address) external returns (address);
+    function organizations(address) external view returns (bool);
     function tokenToUser(address) external returns (address);
     function limits(address,address) external view returns (uint256);
     function trust(address user, uint limit) external;

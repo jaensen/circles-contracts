@@ -24,7 +24,7 @@ contract HubV2 {
     mapping (address => address) public userVerifierMap; // Each safe can opt-in for a verifier
     mapping (address => TokenV2) public userToToken;
     mapping (address => address) public tokenToUser;
-    mapping (address => bool) public organizations;
+    // mapping (address => bool) public organizations;
 
     event Signup(address indexed user, address token);
     event OrganizationSignup(address indexed organization);
@@ -65,7 +65,7 @@ contract HubV2 {
 
     /// @notice Can be called by all signed-up users to opt-in for external verifiers
     function useVerifier(address verifier) public {
-        require(address(userToToken[msg.sender]) != address(0) || organizations[msg.sender], "msg.sender must be signed up");
+        require(address(userToToken[msg.sender]) != address(0) || HubI(previousHub).organizations(msg.sender), "msg.sender must be signed up");
         userVerifierMap[msg.sender] = verifier;
     }
 
@@ -128,7 +128,7 @@ contract HubV2 {
         // signup can only be called once
         require(address(userToToken[msg.sender]) == address(0), "You can't sign up twice");
         // organizations cannot sign up for a token
-        require(organizations[msg.sender] == false, "Organizations cannot signup as normal users");
+        require(!HubI(previousHub).organizations(msg.sender), "Organizations cannot signup as normal users");
 
         address v1Token = HubI(previousHub).userToToken(msg.sender);
         require(v1Token != address(0), "You need to be signed-up at HubV1 before signing up at HubV2");
@@ -153,27 +153,7 @@ contract HubV2 {
         emit TokensMigrated(msg.sender, _token, address(newToken), _amount);
     }
 
-    /// @notice signup to this circles hub - create a circles token and join the trust graph
-    /// @dev signup is permanent, there's no way to unsignup
-    function signup() public {
-        // signup can only be called once
-        require(address(userToToken[msg.sender]) == address(0), "You can't sign up twice");
-        // organizations cannot sign up for a token
-        require(organizations[msg.sender] == false, "Organizations cannot signup as normal users");
-
-        TokenV2 token = new TokenV2(msg.sender);
-        userToToken[msg.sender] = token;
-        tokenToUser[address(token)] = msg.sender;
-
-        // every user must trust themselves with a weight of 100
-        // this is so that all users accept their own token at all times
-        //_trust(msg.sender, 100);
-        // Not reuqired because signup at v1 is always mandatory first
-        //HubI(previousHub).trust(msg.sender, 100);
-
-        emit Signup(msg.sender, address(token));
-    }
-
+    /*
     /// @notice register an organization address with the hub and join the trust graph
     /// @dev signup is permanent for organizations too, there's no way to unsignup
     function organizationSignup() public {
@@ -186,6 +166,7 @@ contract HubV2 {
 
         emit OrganizationSignup(msg.sender);
     }
+    */
 
     /// @dev this is an implementation of exponentiation by squares
     /// @param base the base to be used in the calculation
@@ -226,7 +207,6 @@ contract HubV2 {
 
         // there is no trust
         if (limit == 0) {
-
             // Check if the dest registered a verifier
             if (address(userVerifierMap[dest]) != address(0)) {
                 return VerifierI(userVerifierMap[dest]).checkSendLimit(tokenOwner, src, dest);
@@ -236,7 +216,7 @@ contract HubV2 {
         }
 
         // if dest hasn't signed up, they cannot trust anyone
-        if (address(userToToken[dest]) == address(0) && !organizations[dest]) {
+        if (address(userToToken[dest]) == address(0) && !HubI(previousHub).organizations(dest)) {
             return 0;
         }
 
