@@ -17,6 +17,25 @@ We outline the goals and how we intend to achieve them below and kindly ask for 
 __Organizations__:  
 Besides not being a hard goal it turned out that no changes are required for organization wallets.
 
+## Upgrade process
+### Exchanging v1- for v2-Tokens
+Everyone who holds v1 Tokens can exchange them for v2 Tokens as soon as the token owner migrated to the new version.
+To do that, each v1 token holder sends their holdings to the hub v2 contract and then mints the same amount of v2 tokens.
+This process should be automated by the client software so that whenever a user upgraded to v2 all holders of tokens of this user will exchange their tokens on the next usage of the client.
+
+### Persons
+#### New signup
+All new users have to signup at the v1 hub just as they would do now. Additionally, they have to call the v2 hub's "migrate" function.
+
+#### Migration from v1
+If a user already got a circles safe and receives UBI then this person needs to deactivate their v1 token before the upgrade.
+The client software should make sure that the outstanding UBI is minted a last time before the token is de-activated.
+When the token was deactivated the user can call the "migrate" method on the v2 hub and then exchange all of their own tokens.
+
+### Organizations
+Since the orga accounts didn't suffer from the receive-limitations in the first place, nothing changed.
+However, an organization still can decide to register a Verifier which then has the same effect as on user accounts.
+
 ## Implementation
 We copied the Hub- and Token.sol contracts and modified them as described below. The new files have the "v2" appendix in their name.
 Additionally, we added a new "Verifier" interface which can be used to implement the "follow trust" functionality.
@@ -79,3 +98,6 @@ New files are:
 as well as the corresponding interfaces:
 * [HubV2I.sol](https://github.com/jaensen/circles-contracts/blob/fork-1/contracts/interfaces/HubV2I.sol)
 * [VerifierI.sol](https://github.com/jaensen/circles-contracts/blob/fork-1/contracts/interfaces/VerifierI.sol)
+
+## Future updates
+We think that future updates can be handled in the same way as this proposed update.
